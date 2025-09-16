@@ -1,46 +1,36 @@
 from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.label import Label
-from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.textinput import TextInput
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.scrollview import ScrollView
 
-# Home Screen
-class HomeScreen(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        layout = BoxLayout(orientation='vertical')
-        layout.add_widget(Label(text="Welcome to My App", font_size=40))
-        btn = Button(text="Go to Screen 1", size_hint=(1, 0.2))
-        btn.bind(on_press=lambda x: self.go_to_screen1())
-        layout.add_widget(btn)
-        self.add_widget(layout)
-
-    def go_to_screen1(self):
-        self.manager.current = 'screen1'
-
-# Screen 1
-class Screen1(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        layout = BoxLayout(orientation='vertical')
-        layout.add_widget(Label(text="This is Screen 1", font_size=30))
-        btn = Button(text="Back to Home", size_hint=(1, 0.2))
-        btn.bind(on_press=lambda x: self.go_to_home())
-        layout.add_widget(btn)
-        self.add_widget(layout)
-
-    def go_to_home(self):
-        self.manager.current = 'home'
-
-# Screen Manager
-sm = ScreenManager()
-sm.add_widget(HomeScreen(name='home'))
-sm.add_widget(Screen1(name='screen1'))
-
-# Main App
-class MyNewApp(App):
+class SimpleChatApp(App):
     def build(self):
-        return sm
+        self.chat_log = Label(size_hint_y=None, markup=True)
+        self.chat_log.bind(texture_size=self.update_height)
+
+        scroll = ScrollView()
+        scroll.add_widget(self.chat_log)
+
+        self.input_box = TextInput(size_hint_y=None, height=40, multiline=False)
+        send_btn = Button(text="Send", size_hint_y=None, height=40)
+        send_btn.bind(on_press=self.send_message)
+
+        layout = BoxLayout(orientation="vertical")
+        layout.add_widget(scroll)
+        layout.add_widget(self.input_box)
+        layout.add_widget(send_btn)
+        return layout
+
+    def update_height(self, *args):
+        self.chat_log.height = self.chat_log.texture_size[1]
+
+    def send_message(self, instance):
+        msg = self.input_box.text.strip()
+        if msg:
+            self.chat_log.text += f"[b]You:[/b] {msg}\n"
+            self.input_box.text = ""
 
 if __name__ == "__main__":
-    MyNewApp().run()
+    SimpleChatApp().run()
